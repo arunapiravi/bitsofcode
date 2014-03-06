@@ -1,0 +1,67 @@
+ # Test xdcr pause and resume framework
+    def test_xdcr_get_settings(self):
+        self._load_all_buckets(self.src_master, self.gen_create, "create", 0)
+        self._load_all_buckets(self.dest_master, self.gen_create2, "create", 0)
+        rest = RestConnection(self.src_master)
+        dest_rest = RestConnection(self.dest_master)
+        src_bucket_name = dest_bucket_name = 'default'
+        try:
+            if not rest.is_replication_paused(src_bucket_name, dest_bucket_name):
+                # pause source -> dest
+                self.pause_replication(self.src_master, src_bucket_name, dest_bucket_name)
+                print("Replication paused from source cluster and validated")
+            
+                # pause destination -> source
+                self.pause_replication(self.dest_master, dest_bucket_name, src_bucket_name)
+                print("Replication paused from dest cluster and validated")
+
+                print(" Sleep for 60 secs after paused replication")
+                self.sleep(60)
+
+                self.resume_replication(self.src_master, src_bucket_name, dest_bucket_name)
+                print("Replication resumed from source and validated")
+
+                self.resume_replication(self.dest_master, src_bucket_name, dest_bucket_name)
+                print("Replication resumed from destination and validated")
+        except Exception as e:
+                print e
+                self.sleep(60)
+        self.merge_buckets(self.src_master, self.dest_master, bidirection=True)
+        self.verify_results(verify_src=True)
+        return
+
+
+
+
+2014-03-05 15:44:04 | INFO | MainProcess | MainThread | [xdcrbasetests.setUp] ==============  XDCRbasetests setup was finished for test #1 test_xdcr_get_settings ==============
+2014-03-05 15:44:04 | INFO | MainProcess | MainThread | [data_helper.direct_client] creating direct client 10.3.4.186:11210 default
+2014-03-05 15:44:04 | INFO | MainProcess | MainThread | [data_helper.direct_client] creating direct client 10.3.4.187:11210 default
+2014-03-05 15:44:05 | INFO | MainProcess | load_gen_task | [task.has_next] Batch create documents done #: 0 with exp:0
+2014-03-05 15:44:11 | INFO | MainProcess | load_gen_task | [task.has_next] Batch create documents done #: 20000 with exp:0
+2014-03-05 15:44:11 | INFO | MainProcess | MainThread | [data_helper.direct_client] creating direct client 10.3.4.188:11210 default
+2014-03-05 15:44:11 | INFO | MainProcess | MainThread | [data_helper.direct_client] creating direct client 10.3.4.189:11210 default
+2014-03-05 15:44:13 | INFO | MainProcess | load_gen_task | [task.has_next] Batch create documents done #: 0 with exp:0
+2014-03-05 15:44:19 | INFO | MainProcess | load_gen_task | [task.has_next] Batch create documents done #: 20000 with exp:0
+2014-03-05 15:44:19 | INFO | MainProcess | MainThread | [rest_client.set_xdcr_per_replication_setting] Update replication setting pauseRequested=true on bucket default
+2014-03-05 15:44:22 | INFO | MainProcess | MainThread | [xdcrbasetests.wait_for_xdcr_stats_zero] Timetaken for xdc_ops to become 0 on bucket default on all nodes is 2.83407998085 secs
+2014-03-05 15:44:23 | INFO | MainProcess | MainThread | [xdcrbasetests.wait_for_xdcr_stats_zero] Timetaken for replication_docs_rep_queue to become 0 on bucket default on all nodes is 0.723304033279 secs
+2014-03-05 15:44:24 | INFO | MainProcess | MainThread | [xdcrbasetests.wait_for_xdcr_stats_zero] Timetaken for replication_active_vbreps to become 0 on bucket default on all nodes is 0.775846004486 secs
+Replication paused from source cluster and validated
+2014-03-05 15:44:24 | INFO | MainProcess | MainThread | [rest_client.set_xdcr_per_replication_setting] Update replication setting pauseRequested=true on bucket default
+2014-03-05 15:44:28 | INFO | MainProcess | MainThread | [xdcrbasetests.wait_for_xdcr_stats_zero] Timetaken for xdc_ops to become 0 on bucket default on all nodes is 4.2754509449 secs
+2014-03-05 15:44:29 | INFO | MainProcess | MainThread | [xdcrbasetests.wait_for_xdcr_stats_zero] Timetaken for replication_docs_rep_queue to become 0 on bucket default on all nodes is 0.322231054306 secs
+2014-03-05 15:44:29 | INFO | MainProcess | MainThread | [xdcrbasetests.wait_for_xdcr_stats_zero] Timetaken for replication_active_vbreps to become 0 on bucket default on all nodes is 0.306881904602 secs
+Replication paused from dest cluster and validated
+ Sleep for 60 secs after paused replication
+2014-03-05 15:44:29 | INFO | MainProcess | MainThread | [xdcrbasetests.sleep] sleep for 60 secs.  ...
+2014-03-05 15:45:29 | INFO | MainProcess | MainThread | [rest_client.set_xdcr_per_replication_setting] Update replication setting pauseRequested=false on bucket default
+2014-03-05 15:45:30 | INFO | MainProcess | MainThread | [rest_client.get_xdcr_per_replication_setting] maxConcurrentReps value is same as the global value, fetching global value...
+2014-03-05 15:45:31 | INFO | MainProcess | MainThread | [xdcrbasetests.post_resume_validations] Timetaken for active_vbreps to be rise back to original value on bucket default is 1.31530690193 secs
+2014-03-05 15:45:59 | INFO | MainProcess | MainThread | [xdcrbasetests.post_resume_validations] Timetaken for incoming ops to be seen on remote cluster is 27.2452118397 secs
+Replication resumed from source and validated
+2014-03-05 15:45:59 | INFO | MainProcess | MainThread | [rest_client.set_xdcr_per_replication_setting] Update replication setting pauseRequested=false on bucket default
+2014-03-05 15:45:59 | INFO | MainProcess | MainThread | [rest_client.get_xdcr_per_replication_setting] maxConcurrentReps value is same as the global value, fetching global value...
+2014-03-05 15:46:01 | INFO | MainProcess | MainThread | [xdcrbasetests.post_resume_validations] Timetaken for active_vbreps to be rise back to original value on bucket default is 1.3980140686 secs
+2014-03-05 15:46:24 | INFO | MainProcess | MainThread | [xdcrbasetests.post_resume_validations] Timetaken for incoming ops to be seen on remote cluster is 23.5948359966 secs
+Replication resumed from destination and validated
+2014-03-05 15:46:24 | INFO | MainProcess | MainThread | [xdcrbasetests.merge_buckets] merge buckets 10.3.4.186->10.3.4.188, bidirection:True
