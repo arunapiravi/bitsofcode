@@ -18,14 +18,15 @@
                 print(" Sleep for 60 secs after paused replication")
                 self.sleep(60)
 
+                # Resume replication from source -> dest
                 self.resume_replication(self.src_master, src_bucket_name, dest_bucket_name)
                 print("Replication resumed from source and validated")
 
-                self.resume_replication(self.dest_master, src_bucket_name, dest_bucket_name)
+                # Resume replication from dest -> source
+                self.resume_replication(self.dest_master, dest_bucket_name, src_bucket_name)
                 print("Replication resumed from destination and validated")
         except Exception as e:
                 print e
-                self.sleep(60)
         self.merge_buckets(self.src_master, self.dest_master, bidirection=True)
         self.verify_results(verify_src=True)
         return
